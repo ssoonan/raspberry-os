@@ -24,7 +24,7 @@ kernel_entry:
     msr spsr_el2, x0
 
     adr x0, el1_entry
-    msr ELR_el2, x0
+    msr elr_el2, x0
 
     eret
 
