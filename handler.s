@@ -182,11 +182,6 @@ enable_timer_register:
     msr CNTP_CTL_EL0, x0
     ret
 
-check_timer_status:
-    mrs x0, CNTP_CTL_EL0
-    ret
-
-
 enable_timer:
     stp x29, x30, [sp, #-16]!
     
@@ -199,6 +194,11 @@ enable_timer:
     ldp x29, x30, [sp], #16
     ret
 
+check_timer_status:
+    mrs x0, CNTP_CTL_EL0
+    ret
+
 enable_irq:
-    msr daifclr, #2
+    mov x0, #(0 << 7)
+    msr daif, x0
     ret
