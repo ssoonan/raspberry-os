@@ -1,10 +1,12 @@
 #ifndef _IRQ_H
 #define _IRQ_H
 
-#define CNTP_EL0	        (0x40000040)
-#define CNTP_STATUS_EL0     (0x40000060)
+#include "memory.h"
 
-#define BASE_ADDR 0x3f000000
+#define CNTP_EL0	        P2V(0x40000040)
+#define CNTP_STATUS_EL0     P2V(0x40000060)
+
+#define BASE_ADDR           P2V(0x3f000000)
 
 #define IRQ_BASIC_PENDING	(BASE_ADDR + 0xB200)
 #define ENABLE_IRQS_1		(BASE_ADDR + 0xB210)

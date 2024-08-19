@@ -6,11 +6,11 @@ CFLAGS = -std=c99 -ffreestanding -mgeneral-regs-only
 LDFLAGS = -nostdlib -T link.lds
 
 # Source files
-ASM_SOURCES = boot.s lib.s handler.s
+ASM_SOURCES = boot.s lib.s handler.s mmu.s
 C_SOURCES = main.c uart.c print.c debug.c handler.c
 
 # Object files
-ASM_OBJECTS = boot.o liba.o handlera.o
+ASM_OBJECTS = boot.o liba.o handlera.o mmu.o
 C_OBJECTS = main.o uart.o print.o debug.o handler.o
 
 # Output files
@@ -39,6 +39,9 @@ liba.o: lib.s
 
 handlera.o: handler.s
 	$(CC) -c handler.s -o handlera.o
+
+mmu.o: mmu.s
+	$(CC) -c mmu.s -o mmu.o
 
 # Compile C sources
 %.o: %.c

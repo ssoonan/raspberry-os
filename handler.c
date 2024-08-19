@@ -28,13 +28,13 @@ void init_timer(void)
     out_word(CNTP_EL0, (1 << 1));
 }
 
-static void timer_interrupt_handler(uint64_t spsr)
+static void timer_interrupt_handler(void)
 {
     uint32_t status = read_timer_status();
     if (status & (1 << 2)) {
         ticks++;
         if (ticks % 100 == 0) {
-            printk("timer %d %x \r\n", ticks, spsr);
+            printk("timer %d \r\n", ticks);
         }
 
         set_timer_interval(timer_interval);
@@ -58,7 +58,7 @@ void handler(uint64_t numid, uint64_t esr, uint64_t elr)
         case 2:
             irq = in_word(CNTP_STATUS_EL0);
             if (irq & (1 << 1)) {
-                timer_interrupt_handler(esr);
+                timer_interrupt_handler();
             }
             else {
                 irq = get_irq_number();
