@@ -24,7 +24,7 @@ enable_mmu:
     msr tcr_el1, x0
 
     mrs x0, sctlr_el1
-    orr x0, x0, #1
+    orr x0, x0, #1 // address translation enable
     msr sctlr_el1, x0
     
     ret
@@ -82,7 +82,7 @@ loop2:
     orr x0, x0, #1
     orr x0, x0, #(1 << 10)
 
-loop3:
+loop3: // -> pmd2_ttbr1 세팅
     str x0, [x1], #8
     add x0, x0, #PAGE_SIZE
     cmp x0, x2

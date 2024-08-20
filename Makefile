@@ -7,10 +7,10 @@ LDFLAGS = -nostdlib -T link.lds
 
 # Source files
 ASM_SOURCES = boot.s lib.s handler.s mmu.s
-C_SOURCES = main.c uart.c print.c debug.c handler.c
+C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c
 
 # Object files
-ASM_OBJECTS = boot.o liba.o handlera.o mmu.o
+ASM_OBJECTS = boot.o liba.o handlera.o mmu.o memory.o
 C_OBJECTS = main.o uart.o print.o debug.o handler.o
 
 # Output files
