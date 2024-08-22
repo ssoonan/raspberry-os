@@ -9,6 +9,8 @@
     "handler.h": "c",
     "stdint.h": "c",
     "lib.h": "c",
-    "print.h": "c"
+    "print.h": "c",
+    "memory.h": "c",
+    "debug.h": "c"
   }
 }

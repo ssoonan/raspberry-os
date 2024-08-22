@@ -1,14 +1,23 @@
 .equ MAIR_ATTR, (0x44 << 8)
-.equ TCR_T0SZ,  (16)  // 48bit
-.equ TCR_T1SZ,  (16 << 16) // 48bit
-.equ TCR_TG0,   (0 << 14) // 4KB
-.equ TCR_TG1,   (2 << 30) // 4KB
+.equ TCR_T0SZ,  (16) 
+.equ TCR_T1SZ,  (16 << 16)
+.equ TCR_TG0,   (0 << 14)
+.equ TCR_TG1,   (2 << 30)
 .equ TCR_VALUE, (TCR_T0SZ | TCR_T1SZ | TCR_TG0 | TCR_TG1)
 .equ PAGE_SIZE, (2*1024*1024)
 
 .global enable_mmu
 .global setup_vm
+.global load_pgd
 
+
+load_pgd:
+    msr ttbr0_el1, x0
+    tlbi vmalle1is
+    dsb ish
+    isb
+
+    ret
 
 enable_mmu:
     adr x0, pgd_ttbr1
@@ -24,7 +33,7 @@ enable_mmu:
     msr tcr_el1, x0
 
     mrs x0, sctlr_el1
-    orr x0, x0, #1 // address translation enable
+    orr x0, x0, #1
     msr sctlr_el1, x0
     
     ret
@@ -42,13 +51,12 @@ setup_kvm:
     orr x1, x1, #3
     str x1, [x0]
 
-    mov x2, #0x34000000 // 이 숫자는 실제 메모리에서 커널의 종료지점
+    mov x2, #0x34000000
     adr x1, pmd_ttbr1
     mov x0, #(1 << 10 | 1 << 2 | 1 << 0)
 
 loop1:
-    // #8로 주소+8 갱신
-    str x0, [x1], #8 // x0에 initial 값, x1에 하단 페이지 테이블의 주소
+    str x0, [x1], #8
     add x0, x0, #PAGE_SIZE
     cmp x0, x2
     blo loop1
@@ -82,7 +90,7 @@ loop2:
     orr x0, x0, #1
     orr x0, x0, #(1 << 10)
 
-loop3: // -> pmd2_ttbr1 세팅
+loop3:
     str x0, [x1], #8
     add x0, x0, #PAGE_SIZE
     cmp x0, x2
