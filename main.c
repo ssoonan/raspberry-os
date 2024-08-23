@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "handler.h"
 #include "memory.h"
+#include "file.h"
 
 void KMain(void)
 {
@@ -12,11 +13,13 @@ void KMain(void)
     printk("We are at EL %u\r\n", (uint64_t)get_el());
 
     init_memory();
+    init_fs();
     init_timer();
     init_interrupt_controller();
     enable_irq();
 
-    while (1) {
+    while (1)
+    {
         ;
     }
 }

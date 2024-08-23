@@ -1,36 +1,44 @@
-# Compiler and flags
-CC = aarch64-linux-gnu-gcc
-LD = aarch64-linux-gnu-ld
-OBJCOPY = aarch64-linux-gnu-objcopy
+# Define the cross-compiler prefix
+CROSS_COMPILE = aarch64-linux-gnu-
+
+# Define compiler and linker
+CC = $(CROSS_COMPILE)gcc
+LD = $(CROSS_COMPILE)ld
+OBJCOPY = $(CROSS_COMPILE)objcopy
+
+# Define C flags
 CFLAGS = -std=c99 -ffreestanding -mgeneral-regs-only
-LDFLAGS = -nostdlib -T link.lds
 
 # Source files
 ASM_SOURCES = boot.s lib.s handler.s mmu.s
-C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c
+C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c file.c
 
-# Object files
-ASM_OBJECTS = boot.o liba.o handlera.o mmu.o memory.o
-C_OBJECTS = main.o uart.o print.o debug.o handler.o
+# Define object files
+ASM_OBJECTS = boot.o liba.o handlera.o mmu.o
+C_OBJECTS = main.o uart.o print.o debug.o handler.o memory.o file.o
 
-# Output files
+# Final output
 KERNEL = kernel
-IMG = kernel8.img
+KERNEL_IMG = kernel8.img
+
+# Linker script
+LDSCRIPT = link.lds
 
 .PHONY: all clean
 
 # Default target
-all: $(IMG)
+all: $(KERNEL_IMG)
 
-# Build kernel image
-$(IMG): $(KERNEL)
-	$(OBJCOPY) -O binary $(KERNEL) $(IMG)
+# Rule to create kernel8.img
+$(KERNEL_IMG): $(KERNEL)
+	$(OBJCOPY) -O binary $(KERNEL) $(KERNEL_IMG)
+	dd if=image/os.img >> $(KERNEL_IMG)
 
-# Link object files to create the kernel
+# Rule to link the kernel
 $(KERNEL): $(ASM_OBJECTS) $(C_OBJECTS)
-	$(LD) $(LDFLAGS) -o $(KERNEL) $(ASM_OBJECTS) $(C_OBJECTS)
+	$(LD) -nostdlib -T $(LDSCRIPT) -o $(KERNEL) $(ASM_OBJECTS) $(C_OBJECTS)
 
-# Compile assembly sources
+# Rules to compile assembly files
 boot.o: boot.s
 	$(CC) -c boot.s -o boot.o
 
@@ -43,11 +51,10 @@ handlera.o: handler.s
 mmu.o: mmu.s
 	$(CC) -c mmu.s -o mmu.o
 
-# Compile C sources
+# Rules to compile C files
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean up generated files
+# Clean rule
 clean:
-	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL) $(IMG)
-
+	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL) $(KERNEL_IMG)
