@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "irq.h"
 #include "uart.h"
+#include "handler.h"
 
 void enable_timer(void);
 uint32_t read_timer_status(void);
@@ -46,13 +47,13 @@ static uint32_t get_irq_number(void)
     return in_word(IRQ_BASIC_PENDING);
 }
 
-void handler(uint64_t numid, uint64_t esr, uint64_t elr)
+void handler(struct TrapFrame *tf)
 {
     uint32_t irq;
 
-    switch (numid) {
+    switch (tf->trapno) {
         case 1:
-            printk("sync error at %x: %x\r\n", elr, esr);
+            printk("sync error at %x: %x\r\n", tf->elr, tf->esr);
             while (1) { }
 
         case 2:

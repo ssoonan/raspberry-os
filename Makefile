@@ -11,11 +11,11 @@ CFLAGS = -std=c99 -ffreestanding -mgeneral-regs-only
 
 # Source files
 ASM_SOURCES = boot.s lib.s handler.s mmu.s
-C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c file.c
+C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c file.c process.c
 
 # Define object files
 ASM_OBJECTS = boot.o liba.o handlera.o mmu.o
-C_OBJECTS = main.o uart.o print.o debug.o handler.o memory.o file.o
+C_OBJECTS = main.o uart.o print.o debug.o handler.o memory.o file.o process.o
 
 # Final output
 KERNEL = kernel

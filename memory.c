@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "stddef.h"
 #include "stdbool.h"
+#include "file.h"
 
 static struct Page free_memory;
 extern char end;
@@ -184,15 +185,32 @@ static void free_pgd(uint64_t map)
 
 void free_vm(uint64_t map)
 {
-    // free_page(map, 0x400000);
-    // free_pmd(map);
-    // free_pud(map);
-    // free_pgd(map);
+    free_page(map, 0x400000);
+    free_pmd(map);
+    free_pud(map);
+    free_pgd(map);
 }
 
-bool setup_uvm(void)
+bool setup_uvm(uint64_t map, char *file_name)
 {
     bool status = false;
+    void *page = kalloc();
+
+    if (page != NULL) {
+        memset(page, 0, PAGE_SIZE);
+        status = map_page(map, 0x400000, V2P(page), ENTRY_V | USER | NORMAL_MEMORY | ENTRY_ACCESSED);
+
+        if (status == true) {
+            if (load_file(file_name, (uint64_t)page) == -1) {
+                free_vm(map);
+                return false;
+            }
+        }
+        else {
+            kfree((uint64_t)page);
+            free_vm(map);
+        }
+    }
 
     return status;
 }

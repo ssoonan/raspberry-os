@@ -28,7 +28,7 @@ struct BPB {
 
 struct DirEntry {
     uint8_t name[8];
-    uint8_t ext[3]; 
+    uint8_t ext[3];
     uint8_t attributes;
     uint8_t reserved;
     uint8_t create_ms;

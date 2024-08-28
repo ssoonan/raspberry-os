@@ -5,6 +5,8 @@
 #include "handler.h"
 #include "memory.h"
 #include "file.h"
+#include "stddef.h"
+#include "process.h"
 
 void KMain(void)
 {
@@ -16,10 +18,6 @@ void KMain(void)
     init_fs();
     init_timer();
     init_interrupt_controller();
-    enable_irq();
-
-    while (1)
-    {
-        ;
-    }
+    init_process();
+    //enable_irq();
 }
