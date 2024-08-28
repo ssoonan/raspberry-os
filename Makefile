@@ -24,10 +24,11 @@ KERNEL_IMG = kernel8.img
 # Linker script
 LDSCRIPT = link.lds
 
-.PHONY: all clean
+# Targets
+.PHONY: all clean init-build
 
 # Default target
-all: $(KERNEL_IMG)
+all: init-build $(KERNEL_IMG)
 
 # Rule to create kernel8.img
 $(KERNEL_IMG): $(KERNEL)
@@ -58,3 +59,7 @@ mmu.o: mmu.s
 # Clean rule
 clean:
 	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL) $(KERNEL_IMG)
+
+# Target to ensure init directory Makefile runs
+init-build:
+	$(MAKE) -C init
