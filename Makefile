@@ -11,11 +11,11 @@ CFLAGS = -std=c99 -ffreestanding -mgeneral-regs-only
 
 # Source files
 ASM_SOURCES = boot.s lib.s handler.s mmu.s
-C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c file.c process.c
+C_SOURCES = main.c uart.c print.c debug.c handler.c memory.c file.c process.c syscall.c
 
 # Define object files
 ASM_OBJECTS = boot.o liba.o handlera.o mmu.o
-C_OBJECTS = main.o uart.o print.o debug.o handler.o memory.o file.o process.o
+C_OBJECTS = main.o uart.o print.o debug.o handler.o memory.o file.o process.o syscall.o
 
 # Final output
 KERNEL = kernel
@@ -25,10 +25,10 @@ KERNEL_IMG = kernel8.img
 LDSCRIPT = link.lds
 
 # Targets
-.PHONY: all clean init-build
+.PHONY: all clean lib-build init-build
 
 # Default target
-all: init-build $(KERNEL_IMG)
+all: lib-build init-build $(KERNEL_IMG)
 
 # Rule to create kernel8.img
 $(KERNEL_IMG): $(KERNEL)
@@ -59,7 +59,12 @@ mmu.o: mmu.s
 # Clean rule
 clean:
 	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL) $(KERNEL_IMG)
+	$(MAKE) -C lib clean
+	$(MAKE) -C init clean
 
 # Target to ensure init directory Makefile runs
 init-build:
 	$(MAKE) -C init
+
+lib-build:
+	$(MAKE) -C lib

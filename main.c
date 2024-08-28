@@ -7,6 +7,7 @@
 #include "file.h"
 #include "stddef.h"
 #include "process.h"
+#include "syscall.h"
 
 void KMain(void)
 {
@@ -16,8 +17,9 @@ void KMain(void)
 
     init_memory();
     init_fs();
+    init_system_call();
     init_timer();
     init_interrupt_controller();
-    init_process();
     //enable_irq();
+    init_process();
 }

@@ -32,7 +32,7 @@ all: build-image $(INIT_BIN)
 
 # Rule to create init.bin
 $(INIT_BIN): start.o main.o
-	$(LD) -nostdlib -T $(LDSCRIPT) -o init start.o main.o
+	$(LD) -nostdlib -T $(LDSCRIPT) -o init start.o main.o ../lib/lib.a
 	$(OBJCOPY) -O binary init $(INIT_BIN)
 
 # Rule to build the disk image with init.bin

@@ -1,37 +1,7 @@
 #include "stdint.h"
 #include "stdarg.h"
-#include "uart.h"
 
-static int read_string(char *buffer, int position, const char *string)
-{
-    int index = 0;
-
-    for (index = 0; string[index] != '\0'; index++) {
-        buffer[position++] = string[index];
-    }
-
-    return index;
-}
-
-static int hex_to_string(char *buffer, int position, uint64_t digits)
-{
-    char digits_buffer[25];
-    char digits_map[16] = "0123456789ABCDEF";
-    int size = 0;
-    
-    do {
-        digits_buffer[size++] = digits_map[digits % 16];
-        digits /= 16;
-    } while (digits != 0);
-
-    for (int i = size-1; i >= 0; i--) {
-        buffer[position++] = digits_buffer[i];
-    }
-
-    buffer[position++] = 'H';
-
-    return size + 1;
-}
+extern int writeu(char *buffer, int buffer_size);
 
 static int udecimal_to_string(char *buffer, int position, uint64_t digits)
 {
@@ -65,14 +35,38 @@ static int decimal_to_string(char *buffer, int position, int64_t digits)
     return size;
 }
 
-void write_console(const char *buffer, int size)
+static int hex_to_string(char *buffer, int position, uint64_t digits)
 {
-    for (int i = 0; i < size; i++) {
-        write_char(buffer[i]);
+    char digits_buffer[25];
+    char digits_map[16] = "0123456789ABCDEF";
+    int size = 0;
+
+    do {
+        digits_buffer[size++] = digits_map[digits % 16];
+        digits /= 16;
+    } while (digits != 0);
+
+    for (int i = size-1; i >= 0; i--) {
+        buffer[position++] = digits_buffer[i];
     }
+
+    buffer[position++] = 'H';
+
+    return size+1;
 }
 
-int printk(const char *format, ...)
+static int read_string(char *buffer, int position, const char *string)
+{
+    int index = 0;
+
+    for (index = 0; string[index] != '\0'; index++) {
+        buffer[position++] = string[index];
+    }
+
+    return index;
+}
+
+int printf(const char *format, ...)
 {
     char buffer[1024];
     int buffer_size = 0;
@@ -80,7 +74,7 @@ int printk(const char *format, ...)
     char *string = 0;
     va_list args;
 
-    va_start(args, format);
+    va_start(args,format);
 
     for (int i = 0; format[i] != '\0'; i++) {
         if (format[i] != '%') {
@@ -112,10 +106,10 @@ int printk(const char *format, ...)
                     buffer[buffer_size++] = '%';
                     i--;
             }
-        }
+        }     
     }
 
-    write_console(buffer, buffer_size);
+    buffer_size = writeu(buffer, buffer_size);
     va_end(args);
 
     return buffer_size;
