@@ -44,6 +44,7 @@ build-image: $(INIT_BIN)
 		OFFSET=$$((63 * 512)); \
 		sudo mount -o loop,offset=$$OFFSET $$LOOP_DEV $$MOUNT_POINT; \
 		sudo cp $(INIT_BIN) $$MOUNT_POINT; \
+		sudo cp ../test/TEST.BIN $$MOUNT_POINT; \
 		sudo umount $$MOUNT_POINT; \
 		sudo losetup -d $$LOOP_DEV; \
 		rmdir $$MOUNT_POINT; \
