@@ -5,6 +5,7 @@
 #include "uart.h"
 #include "handler.h"
 #include "syscall.h"
+#include "process.h"
 
 void enable_timer(void);
 uint32_t read_timer_status(void);
@@ -35,10 +36,7 @@ static void timer_interrupt_handler(void)
     uint32_t status = read_timer_status();
     if (status & (1 << 2)) {
         ticks++;
-        if (ticks % 100 == 0) {
-            printk("timer %d \r\n", ticks);
-        }
-
+        wake_up(-1);
         set_timer_interval(timer_interval);
     }
 }
@@ -48,20 +46,35 @@ static uint32_t get_irq_number(void)
     return in_word(IRQ_BASIC_PENDING);
 }
 
+uint64_t get_ticks(void)
+{
+    return ticks;
+}
+
 void handler(struct TrapFrame *tf)
 {
     uint32_t irq;
-
+    int schedule = 0;
+    struct ProcessControl *process_control;
+    
     switch (tf->trapno) {
         case 1:
-            printk("sync error at %x: %x\r\n", tf->elr, tf->esr);
-            while (1) { }
+            if ((tf->spsr & 0xf) == 0) {
+                process_control = get_pc();
+                printk("sync error occurs in process %d\r\n", (int64_t)process_control->current_process->pid);
+                exit();
+            }
+            else {
+                printk("sync error at %x: %x\r\n", tf->elr, tf->esr);
+                while (1) { }
+            }
             break;
 
         case 2:
             irq = in_word(CNTP_STATUS_EL0);
             if (irq & (1 << 1)) {
                 timer_interrupt_handler();
+                schedule = 1;
             }
             else {
                 irq = get_irq_number();
@@ -82,5 +95,9 @@ void handler(struct TrapFrame *tf)
         default:
             printk("unknown exception\r\n");
             while (1) { }
+    }
+
+    if (schedule == 1) {
+        yield();
     }
 }

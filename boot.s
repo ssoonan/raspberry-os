@@ -57,5 +57,7 @@ el1_entry:
     ldr x0, =KMain
     blr x0
 
-    b end
+halt:
+    wfi
+    b halt
     

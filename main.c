@@ -20,6 +20,6 @@ void KMain(void)
     init_system_call();
     init_timer();
     init_interrupt_controller();
-    //enable_irq();
     init_process();
+    enable_irq();
 }

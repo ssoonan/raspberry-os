@@ -2,6 +2,7 @@
 #define _FILE_H
 
 #include "stdint.h"
+#include "stddef.h"
 
 struct BPB {
     uint8_t jump[3];
@@ -41,6 +42,20 @@ struct DirEntry {
     uint16_t cluster_index;
     uint32_t file_size;
 } __attribute__((packed));
+
+struct FCB {
+    char name[8];
+    char ext[3];
+    uint32_t cluster_index;
+    uint32_t dir_index;
+    uint32_t file_size;
+    int count;
+};
+
+struct FileDesc {
+    struct FCB *fcb;
+    uint32_t position;
+};
 
 #define FS_BASE P2V(0x30000000)
 #define ENTRY_EMPTY 0

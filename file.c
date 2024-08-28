@@ -4,6 +4,8 @@
 #include "lib.h"
 #include "debug.h"
 
+static struct FCB *fcb_table;
+static struct FileDesc *file_desc_table;
 
 static struct BPB* get_fs_bpb(void)
 {
@@ -207,6 +209,30 @@ int load_file(char *path, uint64_t addr)
     return ret;
 }
 
+static bool init_fcb(void)
+{
+    fcb_table = (struct FCB*)kalloc();
+    if (fcb_table == NULL) {
+        return false;
+    }
+
+    memset(fcb_table, 0, PAGE_SIZE);
+
+    return true;
+}
+
+static bool init_file_desc(void)
+{
+    file_desc_table = (struct FileDesc*)kalloc();
+    if (file_desc_table == NULL) {
+        return false;
+    }
+
+    memset(file_desc_table, 0, PAGE_SIZE);
+
+    return true;
+}
+
 void init_fs(void)
 {
     uint8_t *p = (uint8_t*)get_fs_bpb();
@@ -215,5 +241,8 @@ void init_fs(void)
         printk("invalid signature\n");
         ASSERT(0);
     }
+
+    ASSERT(init_fcb());
+    ASSERT(init_file_desc());
 }
 

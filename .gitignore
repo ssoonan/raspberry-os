@@ -1,6 +1,6 @@
 *.o
-*.img
+*.a
+*.img*
 kernel
-os.img*
 init
 *.bin
