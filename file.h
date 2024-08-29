@@ -4,7 +4,8 @@
 #include "stdint.h"
 #include "stddef.h"
 
-struct BPB {
+struct BPB
+{
     uint8_t jump[3];
     uint8_t oem[8];
     uint16_t bytes_per_sector;
@@ -27,7 +28,8 @@ struct BPB {
     uint8_t file_system[8];
 } __attribute__((packed));
 
-struct DirEntry {
+struct DirEntry
+{
     uint8_t name[8];
     uint8_t ext[3];
     uint8_t attributes;
@@ -43,7 +45,8 @@ struct DirEntry {
     uint32_t file_size;
 } __attribute__((packed));
 
-struct FCB {
+struct FCB
+{
     char name[8];
     char ext[3];
     uint32_t cluster_index;
@@ -52,9 +55,11 @@ struct FCB {
     int count;
 };
 
-struct FileDesc {
+struct FileDesc
+{
     struct FCB *fcb;
     uint32_t position;
+    int count;
 };
 
 #define FS_BASE P2V(0x30000000)
