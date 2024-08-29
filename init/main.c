@@ -3,14 +3,18 @@
 int main(void)
 {
     int fd;
+    int size;
+    char buffer[100] = { 0 };
 
     fd = open_file("TEST.BIN");
     if (fd == -1) {
         printf("open file failed\r\n");
     }
     else {
-        int size = get_file_size(fd);
-        printf("the size of file is %d open file succeeds\r\n", size);
+        size = get_file_size(fd);
+        size = read_file(fd, buffer, size);
+        printf("%s\r\n", buffer);
+        printf("Read %dbytes in total \r\n", (int64_t)size);
     }
 
     close_file(fd);

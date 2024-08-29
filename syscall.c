@@ -62,7 +62,12 @@ static int sys_get_file_size(int64_t *argptr)
 {
     struct ProcessControl *pc = get_pc();
     return get_file_size(pc->current_process, argptr[0]);
+}
 
+static int sys_read_file(int64_t *argptr)
+{
+    struct ProcessControl *pc = get_pc();
+    return read_file(pc->current_process, argptr[0], (void *)argptr[1], argptr[2]);
 }
 
 void system_call(struct TrapFrame *tf)
@@ -71,7 +76,7 @@ void system_call(struct TrapFrame *tf)
     int64_t param_count = tf->x0;
     int64_t *argptr = (int64_t *)tf->x1;
 
-    if (param_count < 0 || i < 0 || i > 6)
+    if (param_count < 0 || i < 0 || i > 7)
     {
         tf->x0 = -1;
         return;
@@ -89,4 +94,5 @@ void init_system_call(void)
     system_calls[4] = sys_open_file;
     system_calls[5] = sys_close_file;
     system_calls[6] = sys_get_file_size;
+    system_calls[7] = sys_read_file;
 }
