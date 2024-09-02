@@ -5,15 +5,12 @@ int main(void)
     int pid;
 
     pid = fork();
-    if (pid == 0)
-    {
-        printf("This is the new process\r\n");
+    if (pid == 0) {
+        exec("TEST.BIN");
     }
-    else
-    {
-        printf("This is the current process\r\n");
+    else {
         waitu(pid);
     }
-
+    
     return 0;
 }

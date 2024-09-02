@@ -8,6 +8,8 @@
 .global get_file_size
 .global read_file
 .global fork
+.global exec
+.global keyboard_read
 
 writeu:
     sub sp, sp, #16
@@ -111,6 +113,28 @@ read_file:
 
 fork:
     mov x8, #8
+    mov x0, #0
+
+    svc #1234
+
+    ret
+
+exec:
+    sub sp, sp, #8
+    mov x8, #9
+
+    str x0, [sp]
+
+    mov x0, #1
+    mov x1, sp
+
+    svc #1234
+
+    add sp, sp, #8
+    ret
+
+keyboard_read:
+    mov x8, #10
     mov x0, #0
 
     svc #1234
