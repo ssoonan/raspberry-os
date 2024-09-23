@@ -3,58 +3,62 @@
 #include "stddef.h"
 #include "debug.h"
 
-void append_list_tail(struct HeadList *list, struct List *item)
+void append_list_tail(struct LinkedList *list, struct Node *item)
 {
-    item->next = NULL;
+    item->next = NULL; // 혹시나를 위한 초기화
 
-    if (is_list_empty(list)) {
-        list->next = item;
+    if (is_list_empty(list))
+    {
+        list->head = item;
         list->tail = item;
     }
-    else {
+    else
+    {
         list->tail->next = item;
         list->tail = item;
     }
 }
 
-struct List* remove_list_head(struct HeadList *list)
+struct Node *remove_list_head(struct LinkedList *list)
 {
-    struct List *item;
-
     if (is_list_empty(list)) {
         return NULL;
-    }
+    } 
 
-    item = list->next;
-    list->next = item->next;
-    
-    if (list->next == NULL) {
+    struct Node *head = list->head;
+    list->head = head->next;
+
+    if (list->head == NULL) {
         list->tail = NULL;
     }
-    
-    return item;
+
+    return head;
 }
 
-bool is_list_empty(struct HeadList *list)
+bool is_list_empty(struct LinkedList *list)
 {
-    return (list->next == NULL);
+    return (list->head == NULL);
 }
 
-struct List* remove_list(struct HeadList *list, int wait)
+struct Node *remove_list(struct LinkedList *list, int wait)
 {
-    struct List *current = list->next;
-    struct List *prev = (struct List*)list;
-    struct List *item = NULL;
+    struct Node *current = list->head;
+    struct Node *prev = (struct Node *)list;
+    struct Node *item = NULL;
 
-    while (current != NULL) {
-        if (((struct Process*)current)->wait == wait) {
-            prev->next = current->next;
+    while (current != NULL)
+    {
+        if (((struct Process *)current)->wait == wait)
+        {
+            prev->head = current->head;
             item = current;
 
-            if (list->next == NULL) {
+            if (list->head == NULL)
+            {
                 list->tail = NULL;
             }
-            else if (current->next == NULL) {
+            else if (current->head == NULL)
+            {
                 list->tail = prev;
             }
 
@@ -62,7 +66,7 @@ struct List* remove_list(struct HeadList *list, int wait)
         }
 
         prev = current;
-        current = current->next;    
+        current = current->head;
     }
 
     return item;
