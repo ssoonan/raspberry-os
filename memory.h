@@ -18,8 +18,8 @@ struct Page {
 #define PA_UP(v)    ((((uint64_t)v + PAGE_SIZE - 1) >> 21) << 21)
 #define PA_DOWN(v)  (((uint64_t)v >> 21) << 21)
 
-#define PDE_ADDR(p) ((uint64_t)p & 0xfffffffff000)
-#define PTE_ADDR(p) ((uint64_t)p & 0xffffffe00000)
+#define PDE_ADDR(p) ((uint64_t)p & 0xfffffffff000) // page table내 값 48~12bit 추출=다음주소
+#define PTE_ADDR(p) ((uint64_t)p & 0xffffffe00000) // PTE내 값 48~21bit 추출=최종 PFN
 
 #define ENTRY_V         (1 << 0)
 #define TABLE_ENTRY     (1 << 1)
@@ -27,15 +27,17 @@ struct Page {
 #define ENTRY_ACCESSED  (1 << 10)
 #define NORMAL_MEMORY   (1 << 2)
 #define DEVICE_MEMORY   (0 << 2)
+#define USER            (1 << 6)
 
 void* kalloc(void);
 void kfree(uint64_t v);
 void init_memory(void);
 bool map_page(uint64_t map, uint64_t v, uint64_t pa, uint64_t attribute);
 void switch_vm(uint64_t map);
-bool setup_uvm(void);
+bool setup_uvm(uint64_t map, char *file_name);
 void free_page(uint64_t map, uint64_t vstart);
 void free_vm(uint64_t map);
+uint64_t read_pgd(void);
 
 
 #endif
