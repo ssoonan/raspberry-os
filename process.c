@@ -6,6 +6,8 @@
 static struct Process process_table[NUM_PROC];
 static int pid_num = 1;
 void pstart(struct TrapFrame *tf);
+static struct LinkedList run_queue;
+static struct Process *current_process;
 
 static struct Process* find_unused_process(void)
 {
@@ -50,7 +52,7 @@ static struct Process* alloc_new_process(void)
     process->pid = pid_num++;
 
     process->tf = (struct TrapFrame*)(process->stack + PAGE_SIZE - sizeof(struct TrapFrame));
-    process->tf->elr = 0x400000;
+    process->tf->elr = 0x40000;
     process->tf->sp0 = 0x400000 + PAGE_SIZE;
     process->tf->spsr = 0;
 
@@ -70,6 +72,8 @@ static void init_user_process(void)
     ASSERT(process != NULL);
 
     ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN"));
+    current_process = process;
+    append_list_tail(&run_queue, (struct Node*)process);
 }
 
 void launch(void)
@@ -84,4 +88,15 @@ void init_process(void)
     init_user_process();
 
     launch();
+}
+
+void switch_process(struct Process *prev, struct Process *current)
+{
+    switch_vm(current->page_map);
+    swap(prev->context, current->context);
+}
+
+void schedule() {
+    struct Node *head = remove_list_head(&run_queue);
+
 }

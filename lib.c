@@ -21,14 +21,16 @@ void append_list_tail(struct LinkedList *list, struct Node *item)
 
 struct Node *remove_list_head(struct LinkedList *list)
 {
-    if (is_list_empty(list)) {
+    if (is_list_empty(list))
+    {
         return NULL;
-    } 
+    }
 
     struct Node *head = list->head;
     list->head = head->next;
 
-    if (list->head == NULL) {
+    if (list->head == NULL)
+    {
         list->tail = NULL;
     }
 
