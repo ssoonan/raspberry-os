@@ -5,6 +5,8 @@
 #include "uart.h"
 #include "handler.h"
 #include "syscall.h"
+#include "process.h"
+
 
 void enable_timer(void);
 uint32_t read_timer_status(void);
@@ -51,7 +53,7 @@ static uint32_t get_irq_number(void)
 void handler(struct TrapFrame *tf)
 {
     uint32_t irq;
-
+    printk("%x\n", tf->trapno);
     switch (tf->trapno) {
         case 1:
             printk("sync error at %x: %x\r\n", tf->elr, tf->esr);
@@ -62,6 +64,7 @@ void handler(struct TrapFrame *tf)
             irq = in_word(CNTP_STATUS_EL0);
             if (irq & (1 << 1)) {
                 timer_interrupt_handler();
+                yield();
             }
             else {
                 irq = get_irq_number();

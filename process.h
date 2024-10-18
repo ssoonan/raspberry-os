@@ -13,6 +13,7 @@ struct Process
   uint64_t page_map;
   uint64_t stack;
   struct TrapFrame *tf;
+  uint64_t context;
   int wait;
 };
 
@@ -26,6 +27,6 @@ struct Process
 void init_process(void);
 void swap(uint64_t *prev, uint64_t next);
 void schedule();
-
+void yield();
 
 #endif

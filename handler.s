@@ -154,7 +154,7 @@ sync_handler:
 
 irq_handler:
     kernel_entry
-    mov x0, #2
+    mov x0, #2 // 이 인자가 sp0 다음 trapno로 전달됨
     handler_entry
 
 error:
