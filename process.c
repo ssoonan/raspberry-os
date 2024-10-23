@@ -35,6 +35,8 @@ static void init_idle_process(void)
     process->state = PROC_RUNNING;
     process->pid = 0;
     process->page_map = P2V(read_pgd());
+
+    current_process = process;
 }
 
 static struct Process *alloc_new_process(void)
@@ -74,6 +76,7 @@ static void init_user_process(void)
 
     ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN"));
     current_process = process;
+    process->state = PROC_READY;
     append_list_tail(&run_queue, (struct Node *)process);
 }
 
@@ -88,7 +91,7 @@ void init_process(void)
     init_idle_process();
     init_user_process();
 
-    launch();
+    // launch();
 }
 
 void switch_process(struct Process *prev, struct Process *current)
