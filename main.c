@@ -21,5 +21,5 @@ void KMain(void)
     init_timer();
     init_interrupt_controller();
     init_process();
-    // enable_irq();
+    enable_irq();
 }

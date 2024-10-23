@@ -2,12 +2,18 @@
 #include "memory.h"
 #include "debug.h"
 #include "stddef.h"
+#include "print.h"
 
 static struct Process process_table[NUM_PROC];
 static int pid_num = 1;
 void pstart(struct TrapFrame *tf);
 static struct LinkedList run_queue;
 static struct Process *current_process;
+
+struct Process *get_current_pc(void)
+{
+    return current_process;
+}
 
 static struct Process *find_unused_process(void)
 {
@@ -44,24 +50,27 @@ static struct Process *alloc_new_process(void)
     struct Process *process;
 
     process = find_unused_process();
-    ASSERT(process == &process_table[1]);
+    if (process == NULL)
+    {
+        return NULL;
+    }
 
     process->stack = (uint64_t)kalloc();
     ASSERT(process->stack != 0);
-
     memset((void *)process->stack, 0, PAGE_SIZE);
 
     process->state = PROC_INIT;
     process->pid = pid_num++;
 
+    process->context = process->stack + PAGE_SIZE - sizeof(struct TrapFrame) - 12 * 8;
+    *(uint64_t *)(process->context + 11 * 8) = (uint64_t)trap_return;
     process->tf = (struct TrapFrame *)(process->stack + PAGE_SIZE - sizeof(struct TrapFrame));
-    process->tf->elr = 0x40000;
+    process->tf->elr = 0x400000;
     process->tf->sp0 = 0x400000 + PAGE_SIZE;
     process->tf->spsr = 0;
 
     process->page_map = (uint64_t)kalloc();
     ASSERT(process->page_map != 0);
-
     memset((void *)process->page_map, 0, PAGE_SIZE);
 
     return process;
@@ -74,29 +83,22 @@ static void init_user_process(void)
     process = alloc_new_process();
     ASSERT(process != NULL);
 
-    ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN"));
+    ASSERT(setup_uvm((uint64_t)process->page_map, "init.bin"));
     current_process = process;
     process->state = PROC_READY;
     append_list_tail(&run_queue, (struct Node *)process);
-}
-
-void launch(void)
-{
-    switch_vm(process_table[1].page_map);
-    pstart(process_table[1].tf);
 }
 
 void init_process(void)
 {
     init_idle_process();
     init_user_process();
-
-    // launch();
 }
 
 void switch_process(struct Process *prev, struct Process *current)
 {
     switch_vm(current->page_map);
+    printk("before context switching\n");
     swap(prev->context, current->context);
 }
 

@@ -7,7 +7,6 @@
 #include "syscall.h"
 #include "process.h"
 
-
 void enable_timer(void);
 uint32_t read_timer_status(void);
 void set_timer_interval(uint32_t value);
@@ -35,9 +34,11 @@ void init_timer(void)
 static void timer_interrupt_handler(void)
 {
     uint32_t status = read_timer_status();
-    if (status & (1 << 2)) {
+    if (status & (1 << 2))
+    {
         ticks++;
-        if (ticks % 100 == 0) {
+        if (ticks % 100 == 0)
+        {
             printk("timer %d \r\n", ticks);
         }
 
@@ -53,37 +54,57 @@ static uint32_t get_irq_number(void)
 void handler(struct TrapFrame *tf)
 {
     uint32_t irq;
-    printk("%x\n", tf->trapno);
-    switch (tf->trapno) {
-        case 1:
+    struct Process *current_process = get_current_pc();
+    printk("pid: %u\r\n", current_process->pid);
+    printk("page_map: %u\r\n", current_process->page_map);
+    switch (tf->trapno)
+    {
+    case 1:
+        if ((tf->spsr & 0xf) == 0)
+        {
+            printk("sync error occurs in process %d\r\n", current_process->pid);
+        }
+        else
+        {
             printk("sync error at %x: %x\r\n", tf->elr, tf->esr);
-            while (1) { }
-            break;
-
-        case 2:
-            irq = in_word(CNTP_STATUS_EL0);
-            if (irq & (1 << 1)) {
-                timer_interrupt_handler();
-                yield();
+            while (1)
+            {
             }
-            else {
-                irq = get_irq_number();
-                if (irq & (1 << 19)) {
-                    uart_handler();
-                }
-                else {
-                    printk("unknown irq\r\n");
-                    while (1) { }
+        }
+        break;
+
+    case 2:
+        irq = in_word(CNTP_STATUS_EL0);
+        if (irq & (1 << 1))
+        {
+            timer_interrupt_handler();
+            yield();
+        }
+        else
+        {
+            irq = get_irq_number();
+            if (irq & (1 << 19))
+            {
+                uart_handler();
+            }
+            else
+            {
+                printk("unknown irq\r\n");
+                while (1)
+                {
                 }
             }
-            break;
+        }
+        break;
 
-        case 3:
-            system_call(tf);
-            break;
+    case 3:
+        system_call(tf);
+        break;
 
-        default:
-            printk("unknown exception\r\n");
-            while (1) { }
+    default:
+        printk("unknown exception\r\n");
+        while (1)
+        {
+        }
     }
 }

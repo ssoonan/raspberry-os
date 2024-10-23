@@ -27,6 +27,8 @@ struct Process
 void init_process(void);
 void swap(uint64_t *prev, uint64_t next);
 void schedule();
+void trap_return(void);
+struct Process *get_current_pc(void);
 void yield();
 
 #endif
