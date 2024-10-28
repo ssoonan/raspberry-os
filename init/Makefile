@@ -18,7 +18,7 @@ ASM_OBJECTS = start.o
 C_OBJECTS = main.o
 
 # Final output
-INIT_BIN = init.bin
+INIT_BIN = INIT.BIN
 DISK_IMAGE = ../image/os.img
 
 # Linker script

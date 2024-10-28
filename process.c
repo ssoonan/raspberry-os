@@ -83,7 +83,7 @@ static void init_user_process(void)
     process = alloc_new_process();
     ASSERT(process != NULL);
 
-    ASSERT(setup_uvm((uint64_t)process->page_map, "init.bin"));
+    ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN"));
     current_process = process;
     process->state = PROC_READY;
     append_list_tail(&run_queue, (struct Node *)process);
@@ -98,8 +98,7 @@ void init_process(void)
 void switch_process(struct Process *prev, struct Process *current)
 {
     switch_vm(current->page_map);
-    printk("before context switching\n");
-    swap(prev->context, current->context);
+    swap(&prev->context, current->context);
 }
 
 void schedule()
@@ -113,6 +112,7 @@ void schedule()
     }
     struct Process *next_process = (struct Process *)head;
     next_process->state = PROC_RUNNING;
+    //  이 시점에서 갑자기 current_process가 이상하게 바뀜. 이유가 뭐지?
     switch_process(current_process, next_process);
 }
 
@@ -125,6 +125,6 @@ void yield()
     }
     // 현재 태스크 대기 & 맨 뒤로 넣기
     current_process->state = PROC_READY;
-    append_list_tail(&run_queue, (struct Node *)&current_process);
+    append_list_tail(&run_queue, (struct Node *)current_process);
     schedule();
 }
