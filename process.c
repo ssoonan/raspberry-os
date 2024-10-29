@@ -84,7 +84,6 @@ static void init_user_process(void)
     ASSERT(process != NULL);
 
     ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN"));
-    current_process = process;
     process->state = PROC_READY;
     append_list_tail(&run_queue, (struct Node *)process);
 }
@@ -92,6 +91,7 @@ static void init_user_process(void)
 void init_process(void)
 {
     init_idle_process();
+    init_user_process();
     init_user_process();
 }
 
@@ -103,17 +103,23 @@ void switch_process(struct Process *prev, struct Process *current)
 
 void schedule()
 {
-    struct Node *head = remove_list_head(&run_queue);
-    if (head == NULL)
+    struct Process *prev_process;
+    struct Process *next_process;
+    if (is_list_empty(&run_queue))
     {
-        // 런큐에 태스크가 X -> 현재 process 삽입
-        append_list_tail(&run_queue, (struct Node *)&current_process);
-        return;
+        next_process = &process_table[0];
     }
-    struct Process *next_process = (struct Process *)head;
+    else
+    {
+        struct Node *head = remove_list_head(&run_queue);
+        next_process = (struct Process *)head;
+    }
     next_process->state = PROC_RUNNING;
-    //  이 시점에서 갑자기 current_process가 이상하게 바뀜. 이유가 뭐지?
-    switch_process(current_process, next_process);
+    prev_process = current_process;
+    current_process = next_process;
+    switch_process(prev_process, next_process);
+    // printk("prev_process's pid: %d\r\n", prev_process->pid);
+    // printk("next_process's pid: %d\r\n", next_process->pid);
 }
 
 void yield()
@@ -125,6 +131,9 @@ void yield()
     }
     // 현재 태스크 대기 & 맨 뒤로 넣기
     current_process->state = PROC_READY;
-    append_list_tail(&run_queue, (struct Node *)current_process);
+    if (current_process->pid != 0)
+    {
+        append_list_tail(&run_queue, (struct Node *)current_process);
+    }
     schedule();
 }

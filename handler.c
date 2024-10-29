@@ -55,8 +55,6 @@ void handler(struct TrapFrame *tf)
 {
     uint32_t irq;
     struct Process *current_process = get_current_pc();
-    printk("pid: %u\r\n", current_process->pid);
-    printk("page_map: %x\r\n", current_process->page_map);
     switch (tf->trapno)
     {
     case 1:
