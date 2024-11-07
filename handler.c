@@ -37,11 +37,7 @@ static void timer_interrupt_handler(void)
     if (status & (1 << 2))
     {
         ticks++;
-        if (ticks % 100 == 0)
-        {
-            printk("timer %d \r\n", ticks);
-        }
-
+        wake_up(-1);
         set_timer_interval(timer_interval);
     }
 }
@@ -51,16 +47,24 @@ static uint32_t get_irq_number(void)
     return in_word(IRQ_BASIC_PENDING);
 }
 
+uint64_t get_ticks(void)
+{
+    return ticks;
+}
+
 void handler(struct TrapFrame *tf)
 {
     uint32_t irq;
     struct Process *current_process = get_current_pc();
+    int schedule = 0;
+
     switch (tf->trapno)
     {
     case 1:
         if ((tf->spsr & 0xf) == 0)
         {
-            printk("sync error occurs in process %d\r\n", current_process->pid);
+            printk("sync error occurs in process %d\r\n", (int64_t)current_process->pid);
+            exit();
         }
         else
         {
@@ -76,7 +80,7 @@ void handler(struct TrapFrame *tf)
         if (irq & (1 << 1))
         {
             timer_interrupt_handler();
-            yield();
+            schedule = 1;
         }
         else
         {
@@ -104,5 +108,10 @@ void handler(struct TrapFrame *tf)
         while (1)
         {
         }
+    }
+
+    if (schedule == 1)
+    {
+        yield();
     }
 }

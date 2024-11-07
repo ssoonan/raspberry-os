@@ -28,7 +28,7 @@ LDSCRIPT = link.lds
 .PHONY: all clean lib-build init-build
 
 # Default target
-all: lib-build init-build $(KERNEL_IMG)
+all: lib-build test-build init-build  $(KERNEL_IMG)
 
 # Rule to create kernel8.img
 $(KERNEL_IMG): $(KERNEL)
@@ -61,6 +61,7 @@ clean:
 	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL) $(KERNEL_IMG)
 	$(MAKE) -C lib clean
 	$(MAKE) -C init clean
+	$(MAKE) -C test clean
 
 # Target to ensure init directory Makefile runs
 init-build:
@@ -68,3 +69,6 @@ init-build:
 
 lib-build:
 	$(MAKE) -C lib
+
+test-build:
+	$(MAKE) -C test

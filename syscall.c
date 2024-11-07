@@ -2,30 +2,93 @@
 #include "print.h"
 #include "debug.h"
 #include "stddef.h"
+#include "handler.h"
+#include "process.h"
+#include "file.h"
 
+
+// 최종적으로 exception handler에서 호출되어 커널 영역에서 실행되는 함수들. 인자에 맞게 테이블에 매핑되어있음
 static SYSTEMCALL system_calls[10];
 
 static int sys_write(int64_t *argptr)
 {
-    write_console((char*)argptr[0], (int)argptr[1]);
+    write_console((char *)argptr[0], (int)argptr[1]);
     return (int)argptr[1];
+}
+
+static int sys_sleep(int64_t *argptr)
+{
+    uint64_t ticks;
+    uint64_t old_ticks;
+    uint64_t sleep_ticks = argptr[0];
+
+    ticks = get_ticks();
+    old_ticks = ticks;
+
+    while (ticks - old_ticks < sleep_ticks)
+    {
+        sleep(-1);
+        ticks = get_ticks();
+    }
+
+    return 0;
+}
+
+static int sys_exit(int64_t *argptr)
+{
+    exit();
+    return 0;
+}
+
+static int sys_wait(int64_t *argptr)
+{
+    wait(argptr[0]);
+    return 0;
+}
+
+static int sys_open_file(int64_t *argptr)
+{
+    struct Process *process = get_current_pc();
+    return open_file(process, (char *)argptr[0]);
+}
+
+static int sys_close_file(int64_t *argptr)
+{
+    struct Process *process = get_current_pc();
+    close_file(process, argptr[0]);
+
+    return 0;
+}
+
+static int sys_get_file_size(int64_t *argptr)
+{
+    struct Process *process = get_current_pc();
+    return get_file_size(process, argptr[0]);
+
 }
 
 void system_call(struct TrapFrame *tf)
 {
     int64_t i = tf->x8;
     int64_t param_count = tf->x0;
-    int64_t *argptr = (int64_t*)tf->x1;
+    int64_t *argptr = (int64_t *)tf->x1;
 
-    if (param_count < 0 || i != 0) {
+    if (param_count < 0 || i < 0 || i > 6)
+    {
         tf->x0 = -1;
         return;
     }
-
+    // 이 실행한 결과가 바로 x0에 세팅이 되는 느낌인가
     tf->x0 = system_calls[i](argptr);
 }
 
 void init_system_call(void)
 {
     system_calls[0] = sys_write;
+    system_calls[1] = sys_sleep;
+    system_calls[2] = sys_exit;
+    system_calls[3] = sys_wait;
+    system_calls[4] = sys_open_file;
+    system_calls[5] = sys_close_file;
+    system_calls[6] = sys_get_file_size;
 }

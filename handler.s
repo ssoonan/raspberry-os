@@ -48,13 +48,19 @@
     stp x0, x1, [sp, #(16 * 16)]
 
     mrs x0, elr_el1
-    mrs x1, spsr_el1
-    stp x0, x1, [sp, #(16 * 17)]
+    mrs x1, spsr_el1   // 여기서 넣었던 elr, spsr을 다시 load할 뿐이다. 
+    stp x0, x1, [sp, #(16 * 17)] 
 
-    mov x0, sp
+    mov x0, sp   // sp값을 handler에 인자로 전달
     bl handler
     b trap_return
 .endm
+
+trap_return:
+    ldp x0, x1, [sp, #(16 * 17)]   // stack의 제일 위에서 가져와서 elr, spsr 갱신
+    msr elr_el1, x0
+    msr spsr_el1, x1
+    kernel_exit
 
 .section .text
 .global vector_table
@@ -135,12 +141,6 @@ lower_el_aarch32_serror:
 
 pstart:
     mov sp, x0
-    
-trap_return:
-    ldp x0, x1, [sp, #(16 * 17)]
-    msr elr_el1, x0
-    msr spsr_el1, x1
-    kernel_exit
 
 sync_handler:
     kernel_entry
@@ -152,9 +152,10 @@ sync_handler:
     csel x0, x2, x3, ne
     handler_entry
 
+
 irq_handler:
     kernel_entry
-    mov x0, #2 // 이 인자가 sp0 다음 trapno로 전달됨
+    mov x0, #2  // 이 인자가 sp0 다음 trapno로 전달됨
     handler_entry
 
 error:
@@ -189,7 +190,7 @@ read_timer_status:
     ret
 
 enable_irq:
-    msr daifclr, #2
+    msr daifclr, #2  // daif register의 mask clear를 한 번에 하는 register
     ret
 
 swap:

@@ -15,6 +15,8 @@ struct Process
   struct TrapFrame *tf;
   uint64_t context;
   int wait;
+  struct FileDesc *file[100];
+
 };
 
 #define STACK_SIZE (2 * 1024 * 1024)
@@ -23,6 +25,8 @@ struct Process
 #define PROC_INIT 1
 #define PROC_RUNNING 2
 #define PROC_READY 3
+#define PROC_SLEEP 4
+#define PROC_KILLED 5
 
 void init_process(void);
 void swap(uint64_t *prev, uint64_t next);
@@ -30,5 +34,9 @@ void schedule();
 void trap_return(void);
 struct Process *get_current_pc(void);
 void yield();
+void sleep(int wait);
+void wake_up(int wait);
+void exit(void);
+void wait(int pid);
 
 #endif
