@@ -7,7 +7,11 @@
 static struct Process process_table[NUM_PROC];
 static int pid_num = 1;
 void pstart(struct TrapFrame *tf);
+
 static struct LinkedList run_queue;
+static struct LinkedList wait_queue;
+static struct LinkedList kill_queue;
+
 static struct Process *current_process;
 
 struct Process *get_current_pc(void)
@@ -92,7 +96,6 @@ void init_process(void)
 {
     init_idle_process();
     init_user_process();
-    init_user_process();
 }
 
 void switch_process(struct Process *prev, struct Process *current)
@@ -136,4 +139,70 @@ void yield()
         append_list_tail(&run_queue, (struct Node *)current_process);
     }
     schedule();
+}
+
+void sleep(int wait)
+{
+    struct Process *process;
+
+    process = get_current_pc();
+    process->state = PROC_SLEEP;
+    process->wait = wait;
+
+    append_list_tail(&wait_queue, (struct Node *)process);
+    schedule();
+}
+
+void wake_up(int wait)
+{
+    struct Process *process;
+
+    process = (struct Process *)remove_list(&wait_queue, wait);
+
+    while (process != NULL)
+    {
+        process->state = PROC_READY;
+        append_list_tail(&run_queue, (struct Node *)process);
+        process = (struct Process *)remove_list(&wait_queue, wait);
+    }
+}
+
+void exit(void)
+{
+    struct Process *process;
+
+    process = get_current_pc();
+    process->state = PROC_KILLED;
+    process->wait = process->pid;
+
+    append_list_tail(&kill_queue, (struct Node *)process);
+
+    wake_up(-3);
+    schedule();
+}
+
+void wait(int pid)
+{
+    struct Process *process;
+    struct LinkedList *list;
+
+    list = &kill_queue;
+
+    while (1)
+    {
+        if (!is_list_empty(list))
+        {
+            process = (struct Process *)remove_list(list, pid);
+            if (process != NULL)
+            {
+                ASSERT(process->state == PROC_KILLED);
+                kfree(process->stack);
+                free_vm(process->page_map);
+                memset(process, 0, sizeof(struct Process));
+                break;
+            }
+        }
+
+        sleep(-3);
+    }
 }

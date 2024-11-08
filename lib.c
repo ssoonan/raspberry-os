@@ -43,34 +43,30 @@ bool is_list_empty(struct LinkedList *list)
 }
 
 // 해당 함수는 wakeup, wait에서 쓰임. 보류
-// struct Node *remove_list(struct LinkedList *list, int wait)
-// {
-//     struct Node *current = list->head;
-//     struct Node *prev = (struct Node *)list;
-//     struct Node *item = NULL;
+struct Node* remove_list(struct LinkedList *list, int wait)
+{
+    struct Node *current = list->head;
+    struct Node *prev = (struct Node*)list;
+    struct Node *item = NULL;
 
-//     while (current != NULL)
-//     {
-//         if (((struct Process *)current)->wait == wait)
-//         {
-//             prev->head = current->head;
-//             item = current;
+    while (current != NULL) {
+        if (((struct Process*)current)->wait == wait) {
+            prev->next = current->next;
+            item = current;
 
-//             if (list->head == NULL)
-//             {
-//                 list->tail = NULL;
-//             }
-//             else if (current->head == NULL)
-//             {
-//                 list->tail = prev;
-//             }
+            if (list->head == NULL) {
+                list->tail = NULL;
+            }
+            else if (current->next == NULL) {
+                list->tail = prev;
+            }
 
-//             break;
-//         }
+            break;
+        }
 
-//         prev = current;
-//         current = current->head;
-//     }
+        prev = current;
+        current = current->next;    
+    }
 
-//     return item;
-// }
+    return item;
+}
